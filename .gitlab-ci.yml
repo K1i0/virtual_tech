@@ -1,0 +1,55 @@
+# Используем шаблон CI для Docker
+include:
+  template: Docker.gitlab-ci.yml
+
+# Определение переменных окружения
+variables:
+#  DOCKER_IMAGE_TAG используется для тегирования образа
+#  используем хэш коммита ($CI_COMMIT_SHA) в качестве тега
+  DOCKER_IMAGE_TAG: $CI_COMMIT_SHA
+
+# Переопределяем стандартные этапы для выполнения нужных действий
+stages:
+  - build
+  - push
+  - cleanup
+  - status
+
+# Определение задачи для сборки Docker-образа
+build:
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG .
+  rules:
+    - if: '$CI_COMMIT_TAG'
+
+# Определение задачи для загрузки образа в GitLab Registry
+push:
+  stage: push
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG'
+
+# Определение задачи для удаления образа с GitLab Runner-а
+cleanup:
+  stage: cleanup
+  script:
+    - docker rmi $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG'
+
+status:
+  stage: status
+  script:
+    - echo $STATUS_STRING
+
+  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      variables:
+        STATUS_STRING: "Manual status stage running..."
+    - if: '$CI_COMMIT_TAG'
+      variables:
+        STATUS_STRING: "Commit status stage running..."

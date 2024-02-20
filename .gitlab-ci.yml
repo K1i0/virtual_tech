@@ -1,7 +1,3 @@
-# Используем шаблон CI для Docker
-include:
-  template: Docker.gitlab-ci.yml
-
 # Определение переменных окружения
 variables:
 #  DOCKER_IMAGE_TAG используется для тегирования образа
@@ -13,43 +9,56 @@ stages:
   - build
   - push
   - cleanup
-  - status
+  - manual_status
+  - commit_status
 
 # Определение задачи для сборки Docker-образа
 build:
   stage: build
   script:
+    - echo "Running build stage..."
     - docker build -t $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG .
   rules:
     - if: '$CI_COMMIT_TAG'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+
 
 # Определение задачи для загрузки образа в GitLab Registry
 push:
   stage: push
   script:
+    - echo "Running push stage..."
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
   rules:
     - if: '$CI_COMMIT_TAG'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
 
 # Определение задачи для удаления образа с GitLab Runner-а
 cleanup:
   stage: cleanup
   script:
+    - echo "Running cleanup stage..."
     - docker rmi $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
   rules:
     - if: '$CI_COMMIT_TAG'
-
-status:
-  stage: status
-  script:
-    - echo $STATUS_STRING
-
-  when: manual
-  rules:
+      when: on_success
     - if: '$CI_PIPELINE_SOURCE == "web"'
-      variables:
-        STATUS_STRING: "Manual status stage running..."
+      when: manual
+
+manual_status:
+  stage: manual_status
+  script:
+    - echo "Manual status stage running..."
+  when: manual
+
+commit_status:
+  stage: commit_status
+  script:
+    - echo "Commit status stage running..."
+  rules:
     - if: '$CI_COMMIT_TAG'
-      variables:
-        STATUS_STRING: "Commit status stage running..."

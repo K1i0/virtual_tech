@@ -46,7 +46,7 @@
 |Задача сборки Docker-образа| `build: stage: build script: - docker build -t $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG .`                                                                   | В этой задаче используется инструкция docker build для сборки Docker-образа. Тегируем этот образ с помощью переменной DOCKER_IMAGE_TAG                                                                                       |
 |Задача публикации Docker-образа| `push: stage: push script: - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG` | После сборки используем docker push, чтобы загрузить собранный образ в GitLab Registry                                                                                                                                       |
 |Задача для очистки| `cleanup: stage: cleanup script: - docker rmi $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG`| В этой задаче используется docker rmi, чтобы удалить собранный образ с GitLab Runner-а после его публикации в GitLab Registry|
-||                                                                                                                                                          |                                                                                                                                                                                                                              |
+
 Таким образом, при каждом коммите GitLab CI автоматически выполняет эти задачи, что позволяет автоматизировать процесс сборки, тестирования и публикации Docker-образов
 
 ### Правила

@@ -7,58 +7,26 @@ variables:
 # Переопределяем стандартные этапы для выполнения нужных действий
 stages:
   - build
-  - push
-  - cleanup
   - manual_status
-  - commit_status
 
 # Определение задачи для сборки Docker-образа
 build:
+  image: docker:cli
   stage: build
+  services:
+    - docker:dind
   script:
-    - echo "Running build stage..."
     - docker build -t $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG .
-  rules:
-    - if: '$CI_COMMIT_TAG'
-      when: on_success
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: manual
-
-
-# Определение задачи для загрузки образа в GitLab Registry
-push:
-  stage: push
-  script:
-    - echo "Running push stage..."
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
-  rules:
-    - if: '$CI_COMMIT_TAG'
-      when: on_success
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: manual
-
-# Определение задачи для удаления образа с GitLab Runner-а
-cleanup:
-  stage: cleanup
-  script:
-    - echo "Running cleanup stage..."
     - docker rmi $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
   rules:
     - if: '$CI_COMMIT_TAG'
-      when: on_success
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: manual
+      when: always
+    - when: manual
 
 manual_status:
   stage: manual_status
   script:
     - echo "Manual status stage running..."
   when: manual
-
-commit_status:
-  stage: commit_status
-  script:
-    - echo "Commit status stage running..."
-  rules:
-    - if: '$CI_COMMIT_TAG'

@@ -1,9 +1,3 @@
-# Определение переменных окружения
-variables:
-#  DOCKER_IMAGE_TAG используется для тегирования образа
-#  используем хэш коммита ($CI_COMMIT_SHA) в качестве тега
-  DOCKER_IMAGE_TAG: $CI_COMMIT_SHA
-
 # Переопределяем стандартные этапы для выполнения нужных действий
 stages:
   - build
@@ -21,9 +15,14 @@ build:
     - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
     - docker rmi $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG
   rules:
-    - if: '$CI_COMMIT_TAG'
+    - if: $CI_COMMIT_TAG
       when: always
+      variables:
+        DOCKER_IMAGE_TAG: $CI_COMMIT_TAG
     - when: manual
+      variables: 
+        DOCKER_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+
 
 manual_status:
   stage: manual_status

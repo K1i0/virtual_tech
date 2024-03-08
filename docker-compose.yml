@@ -1,0 +1,28 @@
+# Версия синтаксиса Docker Compose, который будет использоваться
+version: '3'
+
+# Ключевое слово, обозначающее начало описания сервисов Docker, которые будут запущены с помощью Docker Compose
+services:
+  traefik:
+    # The official v2 Traefik docker image
+    image: traefik:v2.11
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # Проброс порта 80 контейнера Traefik на порт 8081 хостовой машины
+      # Этот порт будет использоваться для входящего HTTP трафика
+      - "8081:80"
+      # Этот порт будет использоваться для доступа к веб-интерфейсу Traefik (включен --api.insecure=true)
+      - "8080:8080"
+
+  python:
+    image: registry.csc.sibsutis.ru/iv022s20/virtual_tech:server-app
+    ports:
+      - "8000:8000"
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf

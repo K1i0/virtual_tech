@@ -3,8 +3,9 @@ from flask import Flask
 app = Flask(__name__)
 
 
-@app.route('/')
-def hello():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def hello(path):
     # Возвращаем контент в виде строки
     return 'Hello World!'
 

@@ -14,9 +14,17 @@ services:
       - "8081:80"
       # Этот порт будет использоваться для доступа к веб-интерфейсу Traefik (включен --api.insecure=true)
       - "8080:8080"
+  postgres:
+    image: postgres:latest
+    ports:
+      - "8181:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: sql_test
 
   python:
-    image: registry.csc.sibsutis.ru/iv022s20/virtual_tech:server-app
+    image: server-app-db:latest
     ports:
       - "8000:8000"
 

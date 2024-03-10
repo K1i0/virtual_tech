@@ -9,7 +9,9 @@ echo "Current user: $(whoami)"
 
 # Переключаемся в контекст непривилегированного пользователя
 # exec gosu myuser12 "$@"
-gosu myuser12 python server.py
+# gosu myuser12 python server.py
+exec python create_db.py
+exec python server.py
 
 echo "Current user: $(whoami)"
 
